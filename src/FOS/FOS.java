@@ -69,12 +69,14 @@ public class FOS extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		System.out.println("in do get");
+		System.out.println(request.getParameter("SellerData"));
 	}
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		System.out.println("in do post");
 		String num=request.getParameter("from");
+		System.out.println("num" + num);
 		if(num.equals("2")){
 			String lor=request.getParameter("submitvalue");
 			if(lor.equals("login")){
@@ -82,8 +84,9 @@ public class FOS extends HttpServlet {
 		        String PassWd= request.getParameter("Password");
 		        String sor= request.getParameter("SellerOrUser");
 		        boolean retVal=AuthenticateUser(UserId,PassWd,sor);
+		        System.out.println(UserId + " " +  PassWd + " " + sor + " " + retVal);
 		        if(retVal&&sor.equals("Seller")){response.sendRedirect("/FOS/Temp.jsp?name=Raccha");}
-		        else if(retVal&&sor.equals("User")){toUser("2", request, response);}
+		        else if(retVal&&sor.equals("User")){toUser(UserId, request, response, null);}
 		        else {response.sendRedirect("/FOS/Temp.jsp?name=Ettindhi!!");}
 		    }
 			else if(lor.equals("signup")){
@@ -115,6 +118,24 @@ public class FOS extends HttpServlet {
 		        	if(ErrorState.equals("23514")){response.sendRedirect("/FOS/Temp.jsp?name=Password Length Must be>=4");}
 		        }
 			}
+		}
+		else if(num.equals("3"))
+		{
+			String SelectedCuisine = "";
+			String uid= request.getParameter("uid");
+			for(Integer i=1; i<=3; i++)
+			{
+				System.out.println(i);
+				String temp = request.getParameter(i.toString());
+				System.out.println(temp);
+				if(temp!=null && temp.equals("abc"))
+				{
+					SelectedCuisine = SelectedCuisine + getCuisineName(i.toString()) + " ";
+				}
+			}
+			System.out.println("SelectedCuisine : " +  SelectedCuisine);
+			if(SelectedCuisine.equals("")) SelectedCuisine = null;
+			toUser(uid, request, response, SelectedCuisine);
 		}
 	}
 	
@@ -150,23 +171,106 @@ public class FOS extends HttpServlet {
 	    }
         return ret;
 	}
+
+	String getCuisine(String sid){
+		String Cuisine="";
+		String qCuisine = "select distinct cuisine from menu natural join item where sid ='"+sid+"'";
+		try {
+			ResultSet rs1 = st.executeQuery(qCuisine);
+			
+			while(rs1.next()){
+				Cuisine = Cuisine+getCuisineName(rs1.getString(1))+" ";
+			}
+			rs1.close();
+			//System.out.println(Cuisine);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return Cuisine;
+		
+	}
 	
-	void toUser(String uid, HttpServletRequest request, HttpServletResponse response)
+	String getCuisineName(String n){
+		String deepu="";
+		if(n.equals("1")){
+			deepu =  "North-Indian";
+		}
+		if(n.equals("2")){
+			deepu =  "Chinese";
+		}
+		if(n.equals("3")){
+			deepu =  "South-Indian";
+		}
+		return deepu;
+	}
+	
+	void toUser(String uid, HttpServletRequest request, HttpServletResponse response, String SelectedCuisines)
 	{
 		String q1 = "Select * from seller";
+		String qname = "select * from users where uid = '"+uid+"'";
+		String q2 = "select distinct cuisine from item";
 		ResultSet rs;
+		String Uname="";
+		String Uwallet = "";
+		String UserData="";
 		//uid = uid + " deepak";
 		try {
+			 /*rs = st.executeQuery(q2);
+			 rs.next();
+			 String AllCuisine = "";
+			 while(rs.next())
+			 {
+				 AllCuisine = AllCuisine + rs.getString(1);
+			 }
+			 System.out.println(AllCuisine);
+			 */
+			 rs = st.executeQuery(qname);
+			 rs.next();
+			 Uname = rs.getString(2);
+			 Uwallet = rs.getString(5);
+			 UserData = uid + " " + Uname + " " + Uwallet;
 			 rs = st.executeQuery(q1);
 			 String SellerData ="";
 			 while(rs.next())
-				{	String id = rs.getString(1);
+				{
+				 	String id = rs.getString(1);
 				 	String name = rs.getString(2);
 				 	String address = rs.getString(3);
-				 	SellerData = SellerData + name + " " + address + "//";
+				 	SellerData = SellerData + id + " " + name + " " + address +  "//";
+				 	//AllSellerCuisine = AllSellerCuisine + SellerCuisine + "//";
 				}
-			 request.setAttribute("data", SellerData);
-			 request.setAttribute("id",uid);	
+			 rs.close();
+			 String SellerCuisine = "";//getCuisine(id);//" " + SellerCuisine +
+			 String SellerDataNew = "";
+			 for(String s:SellerData.split("//"))
+			 {
+				 if(SelectedCuisines == null)
+				 {
+					 System.out.println("Nothing Selected");
+					 SellerCuisine = getCuisine(s.split(" ")[0]);
+					 //System.out.println(SellerCuisine + s.split(" ")[0]);
+					 SellerDataNew = SellerDataNew + s + " " + SellerCuisine + "//"; 
+				 }
+				 else
+				 {
+					 System.out.println("Selected Only");
+					 SellerCuisine = getCuisine(s.split(" ")[0]);
+					 boolean IsThere = false;
+					 for(String sel:SellerCuisine.split(" "))
+					 {
+						 System.out.println(sel);
+						 if(SelectedCuisines.contains(sel)) IsThere = true;
+					 }
+					 System.out.println("IsThere" + IsThere);
+					 if(IsThere) SellerDataNew = SellerDataNew + s + " " + SellerCuisine + "//";
+				 }
+			 }
+			 //request.setAttribute("CuisineData", AllCuisine);
+			 request.setAttribute("SellerData", SellerDataNew);
+			 request.setAttribute("UserData",UserData);
+			 //request.setAttribute("SellerCuisine",SellerCuisine);
 				RequestDispatcher reqDispatcher = getServletConfig().getServletContext().getRequestDispatcher("/User.jsp");
 				try {
 					reqDispatcher.forward(request,response);
