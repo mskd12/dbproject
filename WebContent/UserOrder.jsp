@@ -8,8 +8,8 @@
 </head>
 <body>
 
-<%String DataUser = request.getAttribute("UserData").toString();
-String ArrayUser[] = DataUser.split(" ");%>
+<%String UserData = request.getAttribute("UserData").toString();
+String ArrayUser[] = UserData.split(" ");%>
 
 <div style="width:100%;height = 50px;background:#F9EECF;border:1px dotted black;">
 <center>
@@ -22,6 +22,13 @@ String ArrayUser[] = DataUser.split(" ");%>
 
 <h1>welcome <%out.println(ArrayUser[1]); %></h1>
 <h2>your wallet contains <%out.println(ArrayUser[2]); %></h2>
+<%
+String ItemData = request.getAttribute("ItemData").toString();
+String ItemDataArray[] = ItemData.split("//");
+
+String SellerData = request.getAttribute("SellerData").toString();
+String SellerDataArray[] = SellerData.split(" ");
+%>
 
 <div style="float:left">
 <h3>please select your cuisine and order</h3>
@@ -31,19 +38,13 @@ String ArrayUser[] = DataUser.split(" ");%>
   <input type="checkbox" name="3" value="abc"> South Indian<br>
   <input type="checkbox" name="4" value="abc"> Veg<br>
   <input type="checkbox" name="5" value="abc"> Non Veg<br>
-  <input type="hidden" name="uid" value=<%out.println(ArrayUser[0]); %>> 
+  <input type = "hidden" name = "UserId" value = <% out.println(ArrayUser[0]); %>>
+  <input type = "hidden" name = "SellerId" value = <% out.println(SellerDataArray[0]); %>>
   <input type="hidden" name="from" value = "4">
   <input type="submit" value="Submit">
 </form>
 </div>
 
-<%
-String ItemData = request.getAttribute("ItemData").toString();
-String ItemDataArray[] = ItemData.split("//");
-
-String SellerData = request.getAttribute("SellerData").toString();
-String SellerDataArray[] = SellerData.split(" ");
-%>
 
 <div style="float:right;padding-right:10%;">
 <h3> Items of <%out.println(SellerDataArray[1]); %></h3>
@@ -61,6 +62,7 @@ String SellerDataArray[] = SellerData.split(" ");
 <%
 for(String s : ItemDataArray)
 {
+	if(s.equals("")) continue;
 	String ItemArray[] = s.split("@");
 	System.out.println(s);
 	System.out.println(ItemArray[0]);

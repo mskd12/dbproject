@@ -95,6 +95,7 @@ public class FOS extends HttpServlet {
 				request.setAttribute("ItemData",ItemData);
 				request.setAttribute("SellerData",SellerData);
 				request.setAttribute("UserData",UserData);
+				System.out.println("User Data 1 : " + UserData);
 				//request.setAttribute("SellerCuisine",SellerCuisine);
 				//System.out.println(ItemData);
 				RequestDispatcher reqDispatcher = getServletConfig().getServletContext().
@@ -183,7 +184,112 @@ public class FOS extends HttpServlet {
 		}
 		else if(num.equals("4"))
 		{
-			
+			System.out.println("uid");
+			String UserId = request.getParameter("UserId");
+			//String UserDataArray[] = UserData.split(" "); 
+			//System.out.println(s);
+			String SellerId = request.getParameter("SellerId");
+			//String SellerDataArray[] = SellerData.split(" "); 
+			System.out.println("User Id : "+UserId);
+			System.out.println("Seller Id : "+SellerId);
+			String q1 = "Select * from menu natural join item where sid = '" + SellerId + "'";
+			String SelectedCuisine = "";
+			for(Integer i=1; i<=3; i++)
+			{
+				System.out.println(i);
+				String temp = request.getParameter(i.toString());
+				System.out.println(temp);
+				if(temp!=null && temp.equals("abc"))
+				{
+					SelectedCuisine = SelectedCuisine + getCuisineName(i.toString()) + " ";
+				}
+			}
+			System.out.println("SelectedCuisine : " + SelectedCuisine);
+			boolean Veg = false;
+			boolean NonVeg = false;
+			for(Integer i=4; i<=5; i++)
+			{
+				System.out.println(i);
+				String temp = request.getParameter(i.toString());
+				System.out.println(temp);
+				if(temp!=null && temp.equals("abc"))
+				{
+					if(i==4){
+						Veg = true;
+					}
+					if(i==5){
+						NonVeg = true;
+					}
+				}
+			}
+			System.out.println("Veg" + Veg + "Nonveg" + NonVeg);
+			boolean constraint2 = true;
+			if(Veg == NonVeg){
+				constraint2 = false;
+			}
+			try {
+				String UserData = "";
+				String SellerData = "";
+				String qUser = "select * from users where uid = '" + UserId + "'";
+				String qSeller = "select * from seller where sid = '" + SellerId + "'";
+				ResultSet rs= st.executeQuery(qUser);
+				rs.next();
+				UserData = rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);//Change delimiter
+				rs= st.executeQuery(qSeller);
+				rs.next();
+				SellerData = rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3);//Change delimiter
+				//Not adding cuisine details to seller data which was there in the original call
+				String ItemData = "";
+				System.out.println("UserData " + UserData);
+				System.out.println("SellerData " + SellerData );
+				rs = st.executeQuery(q1);
+				while(rs.next())
+				{
+					
+					boolean temp = SelectedCuisine.contains(getCuisineName(rs.getString("cuisine")));
+					if(SelectedCuisine.equals("")) temp = true;
+					System.out.println(getCuisineName(rs.getString("cuisine")) + temp);
+					boolean finalbool;
+					if(!constraint2) finalbool = temp;
+					else 
+					{
+						if(Veg) finalbool = (rs.getString("isveg").equals("1")) && temp;
+						else finalbool = (rs.getString("isveg").equals("2")) && temp;
+					}
+					System.out.println(finalbool + " constraint(veg) " + constraint2 +
+							" isveg " + rs.getString("isveg").equals("1") +" temp " + temp);
+					if(finalbool)
+					{
+						ItemData += rs.getString(1) + "@" + rs.getString(2) + "@"  + rs.getString(3) + "@" +
+								rs.getString(4) + "@" + rs.getString(5) + "@"  + rs.getString(6) + "@" +
+								rs.getString(7);
+						ItemData += "//";
+					}
+					//System.out.println();
+				}
+				System.out.println("ItemData : " + ItemData);
+				//request.setAttribute("SellerData", SellerDataNew);
+				if(ItemData.equals("")) System.out.println("check");
+				request.setAttribute("ItemData",ItemData);
+				request.setAttribute("SellerData",SellerData);
+				request.setAttribute("UserData",UserData);
+				//request.setAttribute("SellerCuisine",SellerCuisine);
+				//System.out.println(ItemData);
+				RequestDispatcher reqDispatcher = getServletConfig().getServletContext().
+						getRequestDispatcher("/UserOrder.jsp");
+				try {
+					reqDispatcher.forward(request,response);
+				} catch (ServletException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	

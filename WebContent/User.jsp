@@ -40,6 +40,7 @@ String ArraySell[] = DataSell.split("//");
 <%
 for(String s : ArraySell)
 {
+	if(s.equals("")) continue;
 %>	
 
 <div style="width:100%;background:#F9EECF;border:1px dotted black;text-align:center;">
