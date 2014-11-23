@@ -69,7 +69,51 @@ public class FOS extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		System.out.println("in do get");
-		System.out.println(request.getParameter("SellerData"));
+		String num = request.getParameter("from");
+		System.out.println("num : " + num);
+		if(request.getParameter("from").equals("3"))
+		{
+			//System.out.println(request.getParameter("SellerData"));
+			String UserData = request.getParameter("UserData");
+			String UserDataArray[] = UserData.split(" "); 
+			//System.out.println(s);
+			String SellerData = request.getParameter("SellerData");
+			String SellerDataArray[] = SellerData.split(" "); 
+			String q1 = "Select * from menu natural join item where sid = '" + SellerDataArray[0] + "'";
+			try {
+				String ItemData = "";
+				ResultSet rs = st.executeQuery(q1);
+				while(rs.next())
+				{
+					ItemData += rs.getString(1) + "@" + rs.getString(2) + "@"  + rs.getString(3) + "@" +
+							rs.getString(4) + "@" + rs.getString(5) + "@"  + rs.getString(6) + "@" +
+							rs.getString(7);
+					ItemData += "//";
+					//System.out.println();
+				}
+				//request.setAttribute("SellerData", SellerDataNew);
+				request.setAttribute("ItemData",ItemData);
+				request.setAttribute("SellerData",SellerData);
+				request.setAttribute("UserData",UserData);
+				//request.setAttribute("SellerCuisine",SellerCuisine);
+				//System.out.println(ItemData);
+				RequestDispatcher reqDispatcher = getServletConfig().getServletContext().
+						getRequestDispatcher("/UserOrder.jsp");
+				try {
+					reqDispatcher.forward(request,response);
+				} catch (ServletException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
 	}
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -136,6 +180,10 @@ public class FOS extends HttpServlet {
 			System.out.println("SelectedCuisine : " +  SelectedCuisine);
 			if(SelectedCuisine.equals("")) SelectedCuisine = null;
 			toUser(uid, request, response, SelectedCuisine);
+		}
+		else if(num.equals("4"))
+		{
+			
 		}
 	}
 	
